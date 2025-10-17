@@ -1,15 +1,20 @@
 FROM alpine:latest
 
-RUN apk add --no-cache tinyproxy
+RUN apk add --no-cache dante-server
 
-# تعديل الإعدادات للسماح بالوصول الخارجي
-RUN sed -i 's/^Allow 127.0.0.1/#Allow 127.0.0.1/' /etc/tinyproxy/tinyproxy.conf && \
-    echo "Allow 0.0.0.0/0" >> /etc/tinyproxy/tinyproxy.conf && \
-    sed -i 's/^Port 8888/Port 8080/' /etc/tinyproxy/tinyproxy.conf && \
-    sed -i 's/^#LogLevel Info/LogLevel Info/' /etc/tinyproxy/tinyproxy.conf && \
-    sed -i 's/^#DisableViaHeader Yes/DisableViaHeader Yes/' /etc/tinyproxy/tinyproxy.conf && \
-    echo "ConnectPort 443" >> /etc/tinyproxy/tinyproxy.conf && \
-    echo "ConnectPort 80" >> /etc/tinyproxy/tinyproxy.conf
+RUN echo "logoutput: stdout" > /etc/sockd.conf && \
+    echo "internal: 0.0.0.0 port = 1080" >> /etc/sockd.conf && \
+    echo "external: eth0" >> /etc/sockd.conf && \
+    echo "method: username none" >> /etc/sockd.conf && \
+    echo "user.notprivileged: nobody" >> /etc/sockd.conf && \
+    echo "client pass {" >> /etc/sockd.conf && \
+    echo "    from: 0.0.0.0/0 to: 0.0.0.0/0" >> /etc/sockd.conf && \
+    echo "    log: connect disconnect error" >> /etc/sockd.conf && \
+    echo "}" >> /etc/sockd.conf && \
+    echo "pass {" >> /etc/sockd.conf && \
+    echo "    from: 0.0.0.0/0 to: 0.0.0.0/0" >> /etc/sockd.conf && \
+    echo "    protocol: tcp udp" >> /etc/sockd.conf && \
+    echo "}" >> /etc/sockd.conf
 
-EXPOSE 8080
-CMD ["tinyproxy", "-d"]
+EXPOSE 1080
+CMD ["sockd", "-f", "/etc/sockd.conf"]
