@@ -2,7 +2,7 @@ FROM alpine:latest
 
 RUN apk add --no-cache tinyproxy
 
-# تعديل الإعدادات الافتراضية لتسمح بالوصول الخارجي
+# تعديل الإعدادات للسماح بالوصول الخارجي
 RUN sed -i 's/^#Allow 127.0.0.1/Allow 0.0.0.0/' /etc/tinyproxy/tinyproxy.conf && \
     sed -i 's/^Port 8888/Port 8080/' /etc/tinyproxy/tinyproxy.conf && \
     sed -i 's/^#LogLevel Info/LogLevel Info/' /etc/tinyproxy/tinyproxy.conf && \
